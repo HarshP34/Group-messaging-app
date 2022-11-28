@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SignUp Page</title>
+</head>
+<body>
+    <div class="signup-container">
+        <h1 style="margin-top:0px;margin-bottom:0px">Group Messaging App</h1><br>
+        <form id="signup-form">
+            <h3 style="margin-top:0px;margin-bottom:0px">Sign Up</h3><br>
+            <label for="name">Name:</label><br>
+            <input type="text" name="name" id="name" required><br>
+            <label for="email">Email Id:</label><br>
+            <input type="email" name="email" id="email" required><br>
+            <label for="number">Phone Number:</label><br>
+            <input type="number" name="number" id="number" required><br>
+            <label for="password">Password:</label><br>
+            <input type="password" name="password" id="password" required><br><br>
+            <button id="signup" type="submit">Sign Up</button><br>
+            <a href="./login.html">Login</a><br>
+        </form>
+    </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.1.2/axios.min.js"></script>
+<script>
+const Form=document.getElementById('signup-form');
+const Name=document.getElementById('name');
+const Email=document.getElementById('email');
+const Phone=document.getElementById('number');
+const Password=document.getElementById('password');
+const SignUpBtn=document.getElementById('signup');
+
+SignUpBtn.addEventListener('click',createUser);
+
+async function createUser(e){
+    try{
+        e.preventDefault();
+        if(Name.value===''||Email.value===''||Phone.value===''||Password.value==='')
+        alert('Please fill all fields');
+        else
+        {
+            const userDetails={
+        name:Name.value,
+        email:Email.value,
+        phonenumber:Phone.value,
+        password:Password.value
+    }
+
+    
+  const res= await axios.post('http://localhost:3000/admin/user/signup',userDetails);
+  alert(`${res.data.message}`);
+    }
+        }
+  catch(err){
+        if(err.response.status===400)
+        document.body.innerHTML+=`<h3 style="color:red"><u>${err.response.data.message}<u/></h3>`;
+    }
+}
+
+
+
+</script>
+</body>
+</html>

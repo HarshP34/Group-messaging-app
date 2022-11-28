@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login Page</title>
+</head>
+<body>
+    <div class="login-container">
+        <h1 style="margin-top:0px;margin-bottom:0px">Group Messaging App</h1><br>
+        <form id="login-form">
+         <h3 style="margin-top:0px;margin-bottom:0px">Login</h3><br>
+      <label for="email">Email Id:</label><br> 
+      <input type="email" id="email" name="email" required><br>
+      <label for="password">Password:</label><br>
+      <input type="password" id="password" name="password" required><br><br>
+      <button  id="login" type="submit">Login</button><br>
+      <a href="./signup.html">SignUp</a>
+    </form>
+    </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.1.2/axios.min.js"></script>
+    <script>
+        const Form=document.getElementById('login-form');
+        const Email=document.getElementById('email');
+        const Password=document.getElementById('password');
+        const LoginBtn=document.getElementById('login');
+        LoginBtn.addEventListener('click',loginUser)
+        async function loginUser(e)
+        {
+            try{
+                e.preventDefault();
+                if(Email.value===''||Password.value==='')
+        alert('Please fill all fields');
+        else{
+            const loginDetails={
+                email:Email.value,
+                password:Password.value
+            }
+            const res=await axios.post('http://localhost:3000/admin/user/login',loginDetails);
+            console.log(res)
+            if(res.status===200)
+            localStorage.setItem('token',res.data.token);
+            alert(`${res.data.message}`);
+        }
+            }catch(err)
+            {
+                if(err.response.status===401)
+                document.body.innerHTML+=`<h3 style="color:red"><u>${err.response.data.message}</u></h3>`;
+                if(err.response.status===400)
+                document.body.innerHTML+=`<h3 style="color:red"><u>${err.response.data.message}<u/></h3>`
+               // console.log(err.response.data.message);
+            }
+        }
+    </script>
+</body>
+</html>
