@@ -42,6 +42,7 @@
             if(res.status===200)
             localStorage.setItem('token',res.data.token);
             alert(`${res.data.message}`);
+            location.href = 'chat.html'
         }
             }catch(err)
             {
