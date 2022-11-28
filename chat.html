@@ -17,7 +17,26 @@
 </div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.1.2/axios.min.js"></script>
 <script>
+   const MyForm=document.getElementById('chat-form');
+   const message=document.getElementById('message');
+   const SendBtn=document.getElementById('send-message');
+const token=localStorage.getItem('token');
+const user=localStorage.getItem('user');
+   SendBtn.addEventListener('click',sendMessage);
 
+   async function sendMessage(e)
+   {
+    e.preventDefault();
+    if(message.value==='')
+    alert('Please write something');
+    else{
+        const chatDetails={
+            message:message.value
+        }
+        const res=await axios.post('http://localhost:3000/admin/user/chat',chatDetails,{headers:{'Authentication':token}});
+    }
+    
+   }
 </script>
 </body>
 </html>

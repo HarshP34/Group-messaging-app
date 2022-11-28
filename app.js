@@ -1,5 +1,5 @@
 const express=require('express');
-//const path=reqiure('path');
+const path=require('path');
 const fs=require('fs');
 
 const bodyparser=require('body-parser');
@@ -14,6 +14,10 @@ const cors=require('cors');
 app.use(cors());
 
 const User=require('./model/user');
+const Chat=require('./model/chat');
+
+User.hasMany(Chat);
+Chat.belongsTo(User);
 
 const adminRoutes=require('./routes/admin_route');
 

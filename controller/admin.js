@@ -1,6 +1,8 @@
 const User=require('../model/user');
 const bcrypt=require('bcrypt');
 const jwt=require('jsonwebtoken');
+const Chat=require('../model/chat');
+
 
 exports.getsignup=(req,res,next)=>{
     User.findAll()
@@ -47,7 +49,7 @@ exports.postLogin=async(req,res,next)=>{
             if(err)
             throw new Error('Something Went Wrong');
             if(result===true)
-            res.status(200).json({message:'User login Successful',success:true,token:generateAccessToken(user[0].id,user[0].name)});
+            res.status(200).json({message:'User login Successful',success:true,token:generateAccessToken(user[0].id,user[0].name),user:user[0].name});
             else{
                 res.status(401).json({message:'User is not Authorized',success:false})
             }
@@ -57,4 +59,13 @@ exports.postLogin=async(req,res,next)=>{
             res.status(400).json({message:'User not Found'})
         }
     }catch(err){console.log(err)}
+}
+
+
+exports.postChat=(req,res,next)=>{
+    const {message}=req.body;
+    req.user.createChat({message:message})
+    .then(result=>{
+        res.status(200).json(result);
+    }).catch(err=>console.log(err));
 }
