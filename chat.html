@@ -10,7 +10,8 @@
     
     <div id="chat-container">
         <p style="font-size:40px;margin-left:42%;font-weight: bold;">Chat App</p>
-    <form id="chat-form" style="margin-top: 600px;margin-left: 500px;">
+        <ul id="chats"></ul>
+    <form id="chat-form" style="margin-top: 50px;margin-left: 500px;">
         <input type="text" id="message" name="message" style="width:500px;">
         <button id="send-message">Send</button>
     </form>
@@ -23,6 +24,7 @@
 const token=localStorage.getItem('token');
 const user=localStorage.getItem('user');
    SendBtn.addEventListener('click',sendMessage);
+   const ul=document.getElementById('chats');
 
    async function sendMessage(e)
    {
@@ -34,8 +36,45 @@ const user=localStorage.getItem('user');
             message:message.value
         }
         const res=await axios.post('http://localhost:3000/admin/user/chat',chatDetails,{headers:{'Authentication':token}});
+        //ul.innerHTML='';
+        //reload();
     }
+   }
+   setInterval(()=>{
+    ul.innerHTML='';
+reload();
+   },2000)
+
+   document.addEventListener('DOMContentLoaded',reload);
+   async function reload()
+   {
+    try{
+        ul.innerHTML='';
+    const res=await axios.get('http://localhost:3000/admin/user/chat',{headers:{'Authentication':token}});
+   // console.log(res);
     
+    for(var i=0;i<res.data.users.length;i++)
+    {
+        if(res.data.users[i].name===localStorage.getItem('user'))
+        {
+    res.data.users[i].chats.forEach((chat)=>{
+    let li=document.createElement('li');
+    li.className='userchat';
+    li.appendChild(document.createTextNode(`You:${chat.message}`));
+    ul.appendChild(li);
+})
+        }
+        else{
+res.data.users[i].chats.forEach((chat)=>{
+    let li=document.createElement('li');
+    li.className='userchat';
+    li.appendChild(document.createTextNode(`${res.data.users[i].name}:${chat.message}`));
+    ul.appendChild(li);
+})
+        }
+    }
+   
+    }catch(err){console.log(err)}
    }
 </script>
 </body>

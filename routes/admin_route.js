@@ -14,7 +14,7 @@ router.post('/user/login',adminController.postLogin)
 
 router.post('/user/chat',Authentication.authentication,adminController.postChat);
 
-
+router.get('/user/chat',Authentication.authentication,adminController.getChat);
 
 
 

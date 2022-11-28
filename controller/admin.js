@@ -69,3 +69,10 @@ exports.postChat=(req,res,next)=>{
         res.status(200).json(result);
     }).catch(err=>console.log(err));
 }
+
+exports.getChat=(req,res,next)=>{
+   User.findAll({include:['chats']}).then((users)=>{
+    res.status(200).json({users:users})
+   })
+    .catch(err=>console.log(err));
+}
