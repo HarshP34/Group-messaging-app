@@ -43,20 +43,22 @@ const user=localStorage.getItem('user');
    }
   
 setInterval(async()=>{
-    
+    let flag=0;
    const chats= await axios.get(`http://localhost:3000/admin/user/newmessages?lastmessageid=${localStorage.getItem('lastmessageid')||0}`,{headers:{'Authentication':token}});
-   console.log(chats.data);
+   //console.log(chats.data);
    const newmessages=chats.data.chats;
 if(newmessages.length!=0)
 localStorage.setItem('lastmessageid',newmessages[newmessages.length-1].id);
    for(let i=0;i<newmessages.length;i++)
    {
-        const users=JSON.parse(localStorage.getItem('messages'));
-    for(j=0;j<users.length;j++)
+        const data=JSON.parse(localStorage.getItem('messages'));
+        console.log(data);
+    for(j=0;j<data.users.length;j++)
     {
-        if(newmessages[i].userId===users[j].id)
+        if(newmessages[i].userId===data.users[j].id)
         {
-             if(users[j].name===localStorage.getItem('user'))
+            flag=1;
+             if(data.users[j].name===localStorage.getItem('user'))
              {
      let li=document.createElement('li');
     li.className='userchat';
@@ -66,12 +68,13 @@ localStorage.setItem('lastmessageid',newmessages[newmessages.length-1].id);
              else{
                 let li=document.createElement('li');
     li.className='userchat';
-    li.appendChild(document.createTextNode(`${users[j].name}:${newmessages[i].message}`));
+    li.appendChild(document.createTextNode(`${data.users[j].name}:${newmessages[i].message}`));
     ul.appendChild(li);
              }
         }
     }
-    
+    if(flag==0)
+    reload();
    
 
    }
@@ -82,38 +85,48 @@ localStorage.setItem('lastmessageid',newmessages[newmessages.length-1].id);
    async function reload()
    {
     try{
+        ul.innerHTML='';
     const res=await axios.get(`http://localhost:3000/admin/user/chat`,{headers:{'Authentication':token}});
-   //console.log(res.data); 
+   console.log(res.data); 
    
-localStorage.setItem('messages',JSON.stringify(res.data.users));
+localStorage.setItem('messages',JSON.stringify(res.data));
 
 let lastmessageid=0;
-   for(let i=0;i<res.data.users.length;i++)
+for(var j=0;j<res.data.chats.length;j++)
+{
+
+    for(let i=0;i<res.data.users.length;i++)
    {
-     if(res.data.users[i].name===localStorage.getItem('user'))
+    if(res.data.chats[j].userId===res.data.users[i].id)
+    {
+        if(res.data.users[i].name===localStorage.getItem('user'))
      {
-        res.data.users[i].chats.forEach((chat)=>{
-            if(chat.id>lastmessageid)
-            lastmessageid=chat.id;
+       
+            if(res.data.chats[j].id>lastmessageid)
+            lastmessageid=res.data.chats[j].id;
     let li=document.createElement('li');
     li.className='userchat';
-    li.appendChild(document.createTextNode(`You:${chat.message}`));
+    li.appendChild(document.createTextNode(`You:${res.data.chats[j].message}`));
     ul.appendChild(li);
-     })
+    
     }
     else
     {
-    res.data.users[i].chats.forEach((chat)=>{
-        if(chat.id>lastmessageid)
-            lastmessageid=chat.id;
+        if(res.data.chats[j].id>lastmessageid)
+            lastmessageid=res.data.chats[j].id;
     let li=document.createElement('li');
     li.className='userchat';
-    li.appendChild(document.createTextNode(`${res.data.users[i].name}:${chat.message}`));
+    li.appendChild(document.createTextNode(`${res.data.users[i].name}:${res.data.chats[j].message}`));
     ul.appendChild(li);
-    }) 
+    
     }
+
+    }
+     
     localStorage.setItem('lastmessageid',lastmessageid);
    }
+}
+   
     }catch(err){console.log(err)}
    }
 </script>

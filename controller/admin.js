@@ -72,8 +72,9 @@ exports.postChat=(req,res,next)=>{
 
 exports.getChat=async (req,res,next)=>{
     try{   
- const users=await User.findAll({include:['chats']});
- res.status(200).json({users:users});
+const users=await User.findAll();
+ const chats=await Chat.findAll();
+ res.status(200).json({users:users,chats:chats});
     }catch(err){err=>console.log(err)};
 }
 
