@@ -70,9 +70,22 @@ exports.postChat=(req,res,next)=>{
     }).catch(err=>console.log(err));
 }
 
-exports.getChat=(req,res,next)=>{
-   User.findAll({include:['chats']}).then((users)=>{
-    res.status(200).json({users:users})
-   })
-    .catch(err=>console.log(err));
+exports.getChat=async (req,res,next)=>{
+    try{   
+ const users=await User.findAll({include:['chats']});
+ res.status(200).json({users:users});
+    }catch(err){err=>console.log(err)};
+}
+
+
+exports.getNewMessages=async (req,res,next)=>{
+    try{
+        let lastmessageid=+req.query.lastmessageid;
+        if(lastmessageid==undefined)
+        {
+            lastmessageid=0;
+        }
+    const chats=await Chat.findAll({offset:lastmessageid});
+ res.status(200).json({chats});
+    }catch(err){console.log(err)}
 }

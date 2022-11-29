@@ -36,44 +36,84 @@ const user=localStorage.getItem('user');
             message:message.value
         }
         const res=await axios.post('http://localhost:3000/admin/user/chat',chatDetails,{headers:{'Authentication':token}});
-        //ul.innerHTML='';
-        //reload();
+        ul.innerHTML='';
+        reload();
+        message.value='';
     }
    }
-   setInterval(()=>{
-    ul.innerHTML='';
-reload();
-   },2000)
+  
+setInterval(async()=>{
+    
+   const chats= await axios.get(`http://localhost:3000/admin/user/newmessages?lastmessageid=${localStorage.getItem('lastmessageid')||0}`,{headers:{'Authentication':token}});
+   console.log(chats.data);
+   const newmessages=chats.data.chats;
+if(newmessages.length!=0)
+localStorage.setItem('lastmessageid',newmessages[newmessages.length-1].id);
+   for(let i=0;i<newmessages.length;i++)
+   {
+        const users=JSON.parse(localStorage.getItem('messages'));
+    for(j=0;j<users.length;j++)
+    {
+        if(newmessages[i].userId===users[j].id)
+        {
+             if(users[j].name===localStorage.getItem('user'))
+             {
+     let li=document.createElement('li');
+    li.className='userchat';
+    li.appendChild(document.createTextNode(`You:${newmessages[i].message}`));
+    ul.appendChild(li);
+             }
+             else{
+                let li=document.createElement('li');
+    li.className='userchat';
+    li.appendChild(document.createTextNode(`${users[j].name}:${newmessages[i].message}`));
+    ul.appendChild(li);
+             }
+        }
+    }
+    
+   
+
+   }
+},10000)
+
 
    document.addEventListener('DOMContentLoaded',reload);
    async function reload()
    {
     try{
-        ul.innerHTML='';
-    const res=await axios.get('http://localhost:3000/admin/user/chat',{headers:{'Authentication':token}});
-   // console.log(res);
-    
-    for(var i=0;i<res.data.users.length;i++)
-    {
-        if(res.data.users[i].name===localStorage.getItem('user'))
-        {
-    res.data.users[i].chats.forEach((chat)=>{
+    const res=await axios.get(`http://localhost:3000/admin/user/chat`,{headers:{'Authentication':token}});
+   //console.log(res.data); 
+   
+localStorage.setItem('messages',JSON.stringify(res.data.users));
+
+let lastmessageid=0;
+   for(let i=0;i<res.data.users.length;i++)
+   {
+     if(res.data.users[i].name===localStorage.getItem('user'))
+     {
+        res.data.users[i].chats.forEach((chat)=>{
+            if(chat.id>lastmessageid)
+            lastmessageid=chat.id;
     let li=document.createElement('li');
     li.className='userchat';
     li.appendChild(document.createTextNode(`You:${chat.message}`));
     ul.appendChild(li);
-})
-        }
-        else{
-res.data.users[i].chats.forEach((chat)=>{
+     })
+    }
+    else
+    {
+    res.data.users[i].chats.forEach((chat)=>{
+        if(chat.id>lastmessageid)
+            lastmessageid=chat.id;
     let li=document.createElement('li');
     li.className='userchat';
     li.appendChild(document.createTextNode(`${res.data.users[i].name}:${chat.message}`));
     ul.appendChild(li);
-})
-        }
+    }) 
     }
-   
+    localStorage.setItem('lastmessageid',lastmessageid);
+   }
     }catch(err){console.log(err)}
    }
 </script>
