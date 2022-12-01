@@ -2,7 +2,8 @@ const User=require('../model/user');
 const bcrypt=require('bcrypt');
 const jwt=require('jsonwebtoken');
 const Chat=require('../model/chat');
-
+const Group=require('../model/group');
+const GroupChat=require('../model/groupchat');
 
 exports.getsignup=(req,res,next)=>{
     User.findAll()
@@ -63,8 +64,9 @@ exports.postLogin=async(req,res,next)=>{
 
 
 exports.postChat=(req,res,next)=>{
-    const {message}=req.body;
-    req.user.createChat({message:message})
+    const {message }=req.body;
+    const groupId=req.params.groupId;
+    req.user.createChat({message:message,groupId:groupId,userId:req.user.id})
     .then(result=>{
         res.status(200).json(result);
     }).catch(err=>console.log(err));
@@ -72,8 +74,9 @@ exports.postChat=(req,res,next)=>{
 
 exports.getChat=async (req,res,next)=>{
     try{   
+        const groupId=req.params.groupId;
 const users=await User.findAll();
- const chats=await Chat.findAll();
+ const chats=await Chat.findAll({where:{groupId:groupId}});
  res.status(200).json({users:users,chats:chats});
     }catch(err){err=>console.log(err)};
 }
@@ -82,11 +85,42 @@ const users=await User.findAll();
 exports.getNewMessages=async (req,res,next)=>{
     try{
         let lastmessageid=+req.query.lastmessageid;
+        let groupId=req.params.groupId;
         if(lastmessageid==undefined)
         {
             lastmessageid=0;
         }
-    const chats=await Chat.findAll({offset:lastmessageid});
- res.status(200).json({chats});
+        const groups=await req.user.getGroups();
+    const group=await Group.findAll({where:{id:groupId},include:['chats']});
+    const chats=[];
+    for(var i=0;i<group[0].chats.length;i++)
+    {
+        if(i>lastmessageid)
+        chats.push(group[0].chats[i]);
+    }
+
+ res.status(200).json({chats:chats,lastmessageid:lastmessageid,groups:groups});
+    }catch(err){console.log(err)}
+}
+
+
+exports.postGroup=async(req,res,next)=>{
+    try{
+        const {groupname,groupuser}=req.body;
+   const group=await Group.create({groupname:groupname});
+   groupuser.forEach((user)=>{
+    GroupChat.create({userId:user,groupId:group.id});
+   })
+        res.status(200).json({groupname:groupname,groupuser:groupuser});
+    }catch(err){console.log(err)}
+}
+
+
+exports.getGroup=async(req,res,next)=>{
+    try{
+        const groups=await req.user.getGroups();
+        res.status(200).json({groups});
+
+
     }catch(err){console.log(err)}
 }

@@ -1,0 +1,148 @@
+body{
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family:Verdana, Geneva, Tahoma, sans-serif;
+    margin: 0;
+    min-height: 100vh;
+}
+
+
+button{
+    background-color:rgb(41, 121, 212);
+    color: white;
+    padding: 1rem;
+    border-radius: 5px;
+    border: none;
+    font-family: inherit;
+    font-size: medium;
+}
+
+.popup-container
+{
+    position: fixed;
+    top:0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0,0,0,0.5);
+    display: none;
+    align-items: center;
+    justify-content: center;
+}
+.popup-container1
+{
+    position: fixed;
+    top:0;
+    left: 600px;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0,0,0,0);
+    display: none;
+    align-items: center;
+    justify-content: center;
+   
+   
+}
+.popup-container.active{
+    display: flex;
+}
+.popup-container1.active{
+    display: flex;
+}
+
+.popup{
+    background-color: white;
+    padding: 2rem;
+    width: 500px;
+    height: 400px;
+    border-radius: 5px;
+    position: relative;
+}
+
+.popup1{
+    background-color: white;
+    padding: 2rem;
+    width: 500px;
+    height: 300px;
+    border-radius: 5px;
+    position: relative;
+    background-color: powderblue;
+    overflow-y: auto;
+}
+
+#close{
+    background-color: white;
+    position: absolute;
+    right: 10px;
+    top: 10px;
+   color: rgb(238, 51, 18);
+   font-size: 2rem;
+   border-radius: 5px;
+}
+
+ul{
+    list-style-type:none;
+}
+
+#group-created{
+    margin-left: 25px;
+}
+
+
+.add{
+    background-color: rgb(47, 160, 108);
+    font-size: small;
+    margin-top: 20px;
+    padding-top: 7px;
+    width: 60px;
+    height: 30px;
+}
+
+#group-created{
+    margin-left: 150px;
+    background-color: salmon;
+}
+
+#create-group
+{
+
+   margin-left: 10px;
+
+}
+
+#title{
+    margin-top: 0%;
+    margin-left:50%
+}
+
+
+#chat-container{
+    margin-top: 0px;
+    margin-bottom: 30%;
+}
+
+#chat-form{
+   margin-top:50px;
+    margin-left: 500px;
+align-content: inherit;
+}
+
+.group-button{
+    margin-left: 10px;
+    margin-top: 10px;
+    width: 100px;
+    height: 40px;
+    padding-top: 12px;
+    font-size: small;
+    background-color:rgb(28, 165, 87);
+}
+
+.button-active{
+    background-color:rgb(98, 212, 70);
+}
+
+#group-buttons{
+    margin-right: 500px;
+}

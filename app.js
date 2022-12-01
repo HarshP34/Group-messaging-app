@@ -15,9 +15,17 @@ app.use(cors());
 
 const User=require('./model/user');
 const Chat=require('./model/chat');
+const Group=require('./model/group');
+const GroupChat=require('./model/groupchat');
 
 User.hasMany(Chat);
 Chat.belongsTo(User);
+
+Group.belongsToMany(User,{through:GroupChat});
+User.belongsToMany(Group,{through:GroupChat});
+
+Group.hasMany(Chat);
+Chat.belongsTo(Group);
 
 const adminRoutes=require('./routes/admin_route');
 

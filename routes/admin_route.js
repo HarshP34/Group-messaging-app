@@ -12,13 +12,15 @@ router.post('/user/signup',adminController.postSignup);
 
 router.post('/user/login',adminController.postLogin)
 
-router.post('/user/chat',Authentication.authentication,adminController.postChat);
+router.post('/user/chat/:groupId',Authentication.authentication,adminController.postChat);
 
-router.get('/user/chat',Authentication.authentication,adminController.getChat);
+router.get('/user/chat/:groupId',Authentication.authentication,adminController.getChat);
 
-router.get('/user/newmessages',Authentication.authentication,adminController.getNewMessages);
+router.get('/user/newmessages/:groupId',Authentication.authentication,adminController.getNewMessages);
 
+router.post('/user/creategroup',Authentication.authentication,adminController.postGroup);
 
+router.get('/user/getgroup',Authentication.authentication,adminController.getGroup);
 
 
 

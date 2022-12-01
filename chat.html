@@ -5,16 +5,46 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Chat page</title>
+    <link rel="Stylesheet" href="main.css">
 </head>
 <body >
     
     <div id="chat-container">
-        <p style="font-size:40px;margin-left:42%;font-weight: bold;">Chat App</p>
+        <p style="font-size:40px;;font-weight: bold;" id="title">Chat App</p>
+        <button id="create-group">Create Group</button>
+        
+        <ul id="group-buttons"> 
+            <h3>Group Names</h3>
+        </ul>
+        <div class="popup-container" id="container">
+            <div class="popup">
+                <button id="close">&times;</button>
+                <form>
+                    <label for="group-name">Group Name:</label>
+                    <input type="text" name="group-name" id="group-name">
+                    <h2>Group People</h2>
+                    <ul id="group-member"></ul> 
+                    <button type="submit" id="group-created">Make A Group</button>
+                </form>
+               
+            </div>
+        </div>
+        <div class="popup-container1" id="container1">
+            <div class="popup1">
+                <form>
+                    <ul id="chats"></ul>
+                    <input type="text" id="message" name="message" style="width:500px;"><br>
+                    <button id="send-message" style="margin-top:10px ;">Send</button>
+                </form>
+            </div>
+        </div>
+       
+        
+   <!-- <form id="chat-form">
         <ul id="chats"></ul>
-    <form id="chat-form" style="margin-top: 50px;margin-left: 500px;">
         <input type="text" id="message" name="message" style="width:500px;">
         <button id="send-message">Send</button>
-    </form>
+    </form> -->
 </div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.1.2/axios.min.js"></script>
 <script>
@@ -31,104 +61,280 @@ const user=localStorage.getItem('user');
     e.preventDefault();
     if(message.value==='')
     alert('Please write something');
+    else if(localStorage.getItem('groupactive')==undefined)
+    {
+        alert('Please Select the group');
+    }
     else{
         const chatDetails={
             message:message.value
         }
-        const res=await axios.post('http://localhost:3000/admin/user/chat',chatDetails,{headers:{'Authentication':token}});
+        await axios.post(`http://localhost:3000/admin/user/chat/${localStorage.getItem('groupactive')}`,chatDetails,{headers:{'Authentication':token}});
         ul.innerHTML='';
-        reload();
         message.value='';
+        const container1=document.getElementById('container1');
+        container1.classList.remove('active');
+        container1.classList.add('active');
+        const res=await axios.get(`http://localhost:3000/admin/user/chat/${localStorage.getItem('groupactive')}`,{headers:{'Authentication':token}});
+       //console.log('groupchat',res.data);
+       localStorage.setItem('messages',JSON.stringify(res.data));
+        showonscreen(res.data);
+
     }
    }
   
-setInterval(async()=>{
-    let flag=0;
-   const chats= await axios.get(`http://localhost:3000/admin/user/newmessages?lastmessageid=${localStorage.getItem('lastmessageid')||0}`,{headers:{'Authentication':token}});
-   //console.log(chats.data);
-   const newmessages=chats.data.chats;
-if(newmessages.length!=0)
-localStorage.setItem('lastmessageid',newmessages[newmessages.length-1].id);
-   for(let i=0;i<newmessages.length;i++)
-   {
-        const data=JSON.parse(localStorage.getItem('messages'));
-        console.log(data);
-    for(j=0;j<data.users.length;j++)
-    {
-        if(newmessages[i].userId===data.users[j].id)
+async function newmessages()
+{
+    try{
+        if(localStorage.getItem('groupactive')){
+        let groupchat=[];
+        let chats=JSON.parse(localStorage.getItem('messages')).chats;
+        chats.forEach((chat)=>{
+            if(chat.groupId==localStorage.getItem('groupactive'))
+            groupchat.push(chat);
+        })
+        const data=await axios.get(`http://localhost:3000/admin/user/newmessages/${localStorage.getItem('groupactive')}?lastmessageid=${groupchat.length-1||0}`,{headers:{'Authentication':token}});
+        console.log(data.data);
+        let message=JSON.parse(localStorage.getItem('messages')).chats;
+        let users=JSON.parse(localStorage.getItem('messages')).users;
+        let groups=JSON.parse(localStorage.getItem('groups'));
+        if(data.data.groups.length>groups.length)
         {
-            flag=1;
-             if(data.users[j].name===localStorage.getItem('user'))
-             {
-     let li=document.createElement('li');
-    li.className='userchat';
-    li.appendChild(document.createTextNode(`You:${newmessages[i].message}`));
-    ul.appendChild(li);
-             }
-             else{
-                let li=document.createElement('li');
-    li.className='userchat';
-    li.appendChild(document.createTextNode(`${data.users[j].name}:${newmessages[i].message}`));
-    ul.appendChild(li);
-             }
+            reload();
+            document.getElementById('container1').classList.remove('active');
         }
-    }
-    if(flag==0)
-    reload();
-   
+        if(data.data.chats.length>0)
+        {
+            data.data.chats.forEach((chat)=>{
+                message.push(chat);
 
-   }
-},10000)
+            })
+            let obj={
+                users:users,
+                chats:message
+            }
+           localStorage.setItem('messages',JSON.stringify(obj));
+           showonscreen(JSON.parse(localStorage.getItem('messages')));
+        }
+
+        }
+       
+
+    }catch(err){console.log(err)}
+}
+
+
 
 
    document.addEventListener('DOMContentLoaded',reload);
    async function reload()
    {
     try{
-        ul.innerHTML='';
-    const res=await axios.get(`http://localhost:3000/admin/user/chat`,{headers:{'Authentication':token}});
-   console.log(res.data); 
-   
-localStorage.setItem('messages',JSON.stringify(res.data));
-
-let lastmessageid=0;
-for(var j=0;j<res.data.chats.length;j++)
-{
-
-    for(let i=0;i<res.data.users.length;i++)
-   {
-    if(res.data.chats[j].userId===res.data.users[i].id)
-    {
-        if(res.data.users[i].name===localStorage.getItem('user'))
-     {
        
-            if(res.data.chats[j].id>lastmessageid)
-            lastmessageid=res.data.chats[j].id;
-    let li=document.createElement('li');
-    li.className='userchat';
-    li.appendChild(document.createTextNode(`You:${res.data.chats[j].message}`));
-    ul.appendChild(li);
-    
-    }
-    else
-    {
-        if(res.data.chats[j].id>lastmessageid)
-            lastmessageid=res.data.chats[j].id;
-    let li=document.createElement('li');
-    li.className='userchat';
-    li.appendChild(document.createTextNode(`${res.data.users[i].name}:${res.data.chats[j].message}`));
-    ul.appendChild(li);
-    
-    }
-
-    }
-     
-    localStorage.setItem('lastmessageid',lastmessageid);
-   }
-}
+//     const res=await axios.get(`http://localhost:3000/admin/user/chat`,{headers:{'Authentication':token}});
+//    console.log(res.data); 
    
+// localStorage.setItem('messages',JSON.stringify(res.data));
+
+// let lastmessageid=0;
+// for(var j=0;j<res.data.chats.length;j++)
+// {
+
+//     for(let i=0;i<res.data.users.length;i++)
+//    {
+//     if(res.data.chats[j].userId===res.data.users[i].id)
+//     {
+//         if(res.data.users[i].name===localStorage.getItem('user'))
+//      {
+       
+//             if(res.data.chats[j].id>lastmessageid)
+//             lastmessageid=res.data.chats[j].id;
+//     let li=document.createElement('li');
+//     li.className='userchat';
+//     li.appendChild(document.createTextNode(`You:${res.data.chats[j].message}`));
+//     ul.appendChild(li);
+    
+//     }
+//     else
+//     {
+//         if(res.data.chats[j].id>lastmessageid)
+//             lastmessageid=res.data.chats[j].id;
+//     let li=document.createElement('li');
+//     li.className='userchat';
+//     li.appendChild(document.createTextNode(`${res.data.users[i].name}:${res.data.chats[j].message}`));
+//     ul.appendChild(li);
+    
+//     }
+
+//     }
+     
+//     localStorage.setItem('lastmessageid',lastmessageid);
+//    }
+// }
+const res=await axios.get(`http://localhost:3000/admin/user/chat/${localStorage.getItem('groupactive')||0}`,{headers:{'Authentication':token}});
+       localStorage.setItem('messages',JSON.stringify(res.data));
+   getGroups();
     }catch(err){console.log(err)}
    }
+
+const Open=document.getElementById('create-group');
+const Close=document.getElementById('close');
+const Container=document.getElementById('container');
+
+var groupuser=[];
+Open.addEventListener('click',()=>{
+    groupuser=[];
+    document.getElementById('container1').classList.remove('active');
+    const users=JSON.parse(localStorage.getItem('messages')).users;
+    const ul=document.getElementById('group-member');
+ul.innerHTML='';
+document.getElementById('group-name').value='';
+    for(var i=0;i<users.length;i++)
+    {
+        if(users[i].name===localStorage.getItem('user'))
+        {
+            const adminuser=users[i];
+            localStorage.setItem('adminuser',JSON.stringify(adminuser));
+             groupuser.push(JSON.parse(localStorage.getItem('adminuser')).id);
+            localStorage.setItem('groupuser',groupuser)
+            continue;
+        }
+        const li=document.createElement('li');
+        li.innerHTML+=`
+        <label for="user${i+1}">${users[i].name}</label>
+        <button class="add">ADD</button>
+        <input hidden type="text" id="user${users[i].id}" value=${users[i].id}><br>
+        `
+        ul.appendChild(li);
+    }
+    const addBtns=document.querySelectorAll('.add')
+    for(var i=0;i<addBtns.length;i++)
+    {
+        addBtns[i].addEventListener('click',addToGroup);
+    }
+    const createGrp=document.getElementById('group-created');
+createGrp.addEventListener('click',createGroup);
+    Container.classList.add('active');
+})
+
+Close.addEventListener('click',()=>{
+    Container.classList.remove('active');
+    document.getElementById('container1').classList.add('active');
+})
+
+
+
+
+
+function addToGroup(e)
+{
+   e.preventDefault();
+   li=e.target.parentElement;
+   const users=JSON.parse(localStorage.getItem('messages')).users;
+   users.forEach((user)=>{
+    if(li.innerText.indexOf(user.name)!=-1)
+    {
+         
+         groupuser.push(user.id);
+        console.log(groupuser);
+    }
+   })
+   document.getElementById('group-member').removeChild(li);
+}
+async function createGroup(e)
+{
+    e.preventDefault();
+   
+    const groupDetails={
+        groupname:document.getElementById('group-name').value,
+        groupuser:groupuser
+    }
+    const res=await axios.post(`http://localhost:3000/admin/user/creategroup`,groupDetails,{headers:{'Authentication':token}})
+   localStorage.setItem('groupuser',[]);
+    console.log(res);
+    reload();
+    Container.classList.remove('active');
+    reload();
+   
+}
+
+async function getGroups()
+{
+   const container1=document.getElementById('container1');
+    const data=await axios.get(`http://localhost:3000/admin/user/getgroup`,{headers:{'Authentication':token}});
+    console.log(data);
+    const ul=document.getElementById('group-buttons');
+    ul.innerHTML='<h3>Group Names</h3>';
+    localStorage.setItem('groups',JSON.stringify(data.data.groups))
+    data.data.groups.forEach((group)=>{
+        const li=document.createElement('li');
+        const button=document.createElement('button');
+        button.className='group-button';
+        button.appendChild(document.createTextNode(`${group.groupname}`));
+        button.addEventListener('click',openGroupChat);
+        li.appendChild(button);
+        ul.appendChild(li);
+      
+        async function openGroupChat(e)
+    {
+        e.preventDefault();
+        container1.classList.remove('active');
+        container1.classList.add('active');
+        const active=ul.querySelector('.button-active')
+       
+        if(active)
+        active.classList.remove('button-active')
+        const button=e.target;
+        button.classList.add('button-active');
+        const groups=JSON.parse(localStorage.getItem('groups'));
+        groups.forEach((group)=>{
+            if(button.innerText.indexOf(group.groupname)!=-1)
+            localStorage.setItem('groupactive',group.id);
+          
+        })
+        const res=await axios.get(`http://localhost:3000/admin/user/chat/${localStorage.getItem('groupactive')}`,{headers:{'Authentication':token}});
+       console.log('groupchat',res.data);
+       localStorage.setItem('messages',JSON.stringify(res.data));
+        showonscreen(res.data);
+        if(myInterval){
+            clearInterval(myInterval);
+        }
+        
+  var myInterval=setInterval(async()=>{
+    newmessages();
+},10000)
+    }
+    })
+   
+
+}
+function showonscreen(data)
+{
+    document.getElementById('chats').innerHTML='';
+    for(var i=0;i<data.chats.length;i++)
+    {
+        for(var j=0;j<data.users.length;j++)
+        {
+            if(data.chats[i].userId===data.users[j].id)
+            {
+                if(data.users[j].name===localStorage.getItem('user'))
+                {
+                    let li=document.createElement('li');
+    li.className='userchat';
+    li.appendChild(document.createTextNode(`You:${data.chats[i].message}`));
+    ul.appendChild(li);
+                }
+                else{
+                    let li=document.createElement('li');
+    li.className='userchat';
+    li.appendChild(document.createTextNode(`${data.users[j].name}:${data.chats[i].message}`));
+    ul.appendChild(li);
+                }
+            }
+        }
+    }
+}
+
 </script>
 </body>
 </html>
