@@ -109,7 +109,10 @@ exports.postGroup=async(req,res,next)=>{
         const {groupname,groupuser}=req.body;
    const group=await Group.create({groupname:groupname});
    groupuser.forEach((user)=>{
-    GroupChat.create({userId:user,groupId:group.id});
+    if(user===req.user.id)
+    GroupChat.create({userId:user,groupId:group.id,isAdmin:true});
+    else
+    GroupChat.create({userId:user,groupId:group.id,isAdmin:false});
    })
         res.status(200).json({groupname:groupname,groupuser:groupuser});
     }catch(err){console.log(err)}

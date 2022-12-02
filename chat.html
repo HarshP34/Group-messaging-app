@@ -23,6 +23,7 @@
                     <label for="group-name">Group Name:</label>
                     <input type="text" name="group-name" id="group-name">
                     <h2>Group People</h2>
+                    <input type="text" name="filter" id="filter">
                     <ul id="group-member"></ul> 
                     <button type="submit" id="group-created">Make A Group</button>
                 </form>
@@ -269,10 +270,15 @@ async function getGroups()
     data.data.groups.forEach((group)=>{
         const li=document.createElement('li');
         const button=document.createElement('button');
+        const infoBtn=document.createElement('button');
+        infoBtn.className='info-button';
         button.className='group-button';
         button.appendChild(document.createTextNode(`${group.groupname}`));
+        infoBtn.appendChild(document.createTextNode('details'));
         button.addEventListener('click',openGroupChat);
+        infoBtn.addEventListener('click',opendetails)
         li.appendChild(button);
+        li.appendChild(infoBtn);
         ul.appendChild(li);
       
         async function openGroupChat(e)
@@ -305,7 +311,18 @@ async function getGroups()
 },10000)
     }
     })
-   
+   async function opendetails(e)
+   {
+    e.preventDefault();
+    const button=e.target.parentElement;
+    const groups=JSON.parse(localStorage.getItem('groups'));
+        groups.forEach((group)=>{
+            if(button.innerText.indexOf(group.groupname)!=-1)
+            localStorage.setItem('groupdetail',group.id);
+        })
+    location.href='groupdetail.html';
+    console.log(1);
+   }
 
 }
 function showonscreen(data)
@@ -334,6 +351,26 @@ function showonscreen(data)
         }
     }
 }
+var filter=document.getElementById('filter');
+filter.addEventListener('keyup',filteritems);
+function filteritems(e)
+{
+    var text=e.target.value.toLowerCase();
+    var items=document.getElementById('group-member').getElementsByTagName('li')
+    Array.from(items).forEach(function(item){
+        var itemname=item.childNodes[1].textContent;
+        console.log(itemname);
+        if(itemname.toLowerCase().indexOf(text)!=-1)
+        {
+            item.style.display='block';
+        }
+        else{
+            item.style.display='none';
+        }
+    })
+}
+
+
 
 </script>
 </body>

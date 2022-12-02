@@ -28,8 +28,10 @@ Group.hasMany(Chat);
 Chat.belongsTo(Group);
 
 const adminRoutes=require('./routes/admin_route');
+const detailRoutes=require('./routes/detail_route')
 
 app.use('/admin',adminRoutes);
+app.use('/detail',detailRoutes);
 
 sequelize
 //.sync({force:true})

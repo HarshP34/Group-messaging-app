@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Group-details</title>
+    <link rel="Stylesheet" href="main.css">
+</head>
+<body>
+    <ul id="ul1"></ul>
+    <ul id="users"></ul>
+    <div class="popup-container" id="container">
+        <div class="popup">
+            <button id="close">&times;</button>
+            <form id="form">
+                <input type="text" name="filter" id="filter">
+                <h2>Group People</h2>
+                <ul id="group-member"></ul> 
+            </form>
+        </div>
+    </div>   
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.1.2/axios.min.js"></script>
+    <script>
+        const token=localStorage.getItem('token');
+        document.addEventListener('DOMContentLoaded',reload)
+
+       
+        async function reload()
+        {
+            try{
+                
+       const data=await axios.get(`http://localhost:3000/detail/groupdetail/${localStorage.getItem('groupdetail')}`,{headers:{'Authentication':token}})
+         showonscreen(data.data.details);
+            }catch(err){console.log(err)}
+        }
+
+
+       function showonscreen(data)
+        {
+            const ul=document.getElementById('users');
+            ul.innerHTML='';
+            document.getElementById('ul1').innerHTML='';
+            const users=JSON.parse(localStorage.getItem('messages')).users;
+            const groups=JSON.parse(localStorage.getItem('groups'));
+            let flag=0;
+            console.log(data[0].groupId);
+            for(var j=0;j<groups.length;j++)
+            {
+                if(groups[j].id==data[0].groupId)
+              {
+                ul.innerHTML+=`GroupName-${groups[j].groupname}<br><br>`
+              }
+            }
+            for(var i=0;i<data.length;i++)
+            {
+                users.forEach((user)=>{
+                  if(user.id==data[i].userId)
+                  {
+                    if(data[i].isAdmin===true)
+                    {
+                       
+                        if(user.name===localStorage.getItem('user'))
+                    {
+                        
+                        if(!document.getElementById('addmember'))
+                        document.getElementById('ul1').innerHTML=`<button id="addmember">Add member</button><br>`
+                        let li=document.createElement('li');
+                        li.appendChild(document.createTextNode('You(admin)'))
+                        li.innerHTML+=`<input hidden type="text" id="userId" value=${user.id}> `
+                        li.className='groupmember';
+                        flag=1;
+                        ul.appendChild(li);
+                    }
+                    else{
+                        let li=document.createElement('li');
+                        li.appendChild(document.createTextNode(`${user.name}(admin)`));
+                        li.innerHTML+=`<input hidden type="text" id="userId" value=${user.id}> `
+                        li.className='groupmember';
+                        ul.appendChild(li);
+                    }
+                    }
+                    else{
+                        if(user.name===localStorage.getItem('user'))
+                    {
+                        let li=document.createElement('li');
+                        li.appendChild(document.createTextNode('You'))
+                        li.innerHTML+=`<input hidden type="text" id="userId" value=${user.id}> `
+                        li.className='groupmember';
+                        ul.appendChild(li);
+                    }
+                    else{
+                        let li=document.createElement('li');
+                        li.appendChild(document.createTextNode(`${user.name}`))
+                        li.innerHTML+=`<input hidden type="text" id="userId" value=${user.id}> `
+                        li.className='groupmember';
+                        ul.appendChild(li);
+                    }
+                    }
+                    
+                  }
+})
+            }
+            if(flag==1)
+            {
+                ul.querySelectorAll('.groupmember').forEach((user)=>{
+                    if(user.innerHTML.indexOf('admin')==-1)
+                    {
+                        let adminBtn=document.createElement('button');
+                        adminBtn.appendChild(document.createTextNode('Admin'));
+                        adminBtn.className='admin-button';
+                        user.appendChild(adminBtn);
+                        adminBtn.addEventListener('click',makeAdmin);
+                    }
+                    let removeBtn=document.createElement('button');
+                    removeBtn.appendChild(document.createTextNode('X'));
+                    removeBtn.className='remove-button';
+                    user.appendChild(removeBtn);
+                    removeBtn.addEventListener('click',removeuser);
+                    
+                })
+            }
+           
+         
+            const Open=document.getElementById('addmember');
+ const Close=document.getElementById('close');
+const Container=document.getElementById('container');
+var groupuser=[];
+if(Open)
+{
+    Open.addEventListener('click',async()=>{
+    groupuser=[];
+    // if(myInterval)
+    // clearInterval(myInterval);
+Container.classList.remove('active');
+    const users=JSON.parse(localStorage.getItem('messages')).users;
+    const ul=document.getElementById('group-member');
+    ul.innerHTML='';
+const groupDetails=localStorage.getItem('groupdetail');
+data=await axios.get(`http://localhost:3000/detail/otherusers/${groupDetails}`);
+//console.log(data.data);
+
+let a=0;
+    for(var i=0;i<users.length;i++)
+    {
+        a=0;
+       for(var j=0;j<data.data.users[0].users.length;j++)
+       {
+       
+        if(users[i].id==data.data.users[0].users[j].id)
+        {
+          a=1;
+        }
+       }
+       if(a==0)
+        {
+            const li=document.createElement('li');
+        li.innerHTML+=`
+        <label for="user${i+1}">${users[i].name}</label>
+        <button class="add">ADD</button>
+        <input hidden type="text" id="userId" value=${users[i].id}><br>
+        `
+        ul.appendChild(li);
+        }
+        
+    }
+    const addBtns=document.querySelectorAll('.add')
+    for(var i=0;i<addBtns.length;i++)
+    {
+        addBtns[i].addEventListener('click',addToGroup);
+    }
+    var filter=document.getElementById('filter');
+filter.addEventListener('keyup',filteritems);
+function filteritems(e)
+{
+    var text=e.target.value.toLowerCase();
+    var items=document.getElementById('group-member').getElementsByTagName('li')
+    Array.from(items).forEach(function(item){
+        var itemname=item.childNodes[1].textContent;
+        console.log(itemname);
+        if(itemname.toLowerCase().indexOf(text)!=-1)
+        {
+            item.style.display='block';
+        }
+        else{
+            item.style.display='none';
+        }
+    })
+}
+    Container.classList.add('active');
+
+})
+}
+
+
+Close.addEventListener('click',()=>{
+    document.getElementById('group-member').innerHTML='';
+    Container.classList.remove('active');
+    //document.getElementById('container1').classList.add('active');
+})
+        }
+
+        var myInterval=setInterval(async()=>{
+        reload();
+      },10000)
+
+        async function removeuser(e)
+            {
+                try{
+                    let userId;
+                    e.preventDefault();
+                document.querySelectorAll('.remove-button').forEach((remove)=>{
+                    if(e.target==remove){
+                        console.log(remove.parentElement.querySelector('#userId').value);
+                    userId=remove.parentElement.querySelector('#userId').value;
+                    } 
+                })
+                const groupId={
+                    groupId:localStorage.getItem('groupdetail')
+                }
+                if(e.target.parentElement.innerText.indexOf('You')!=-1)
+                {
+                    location.href='chat.html';
+                }
+                const res=await axios.post(`http://localhost:3000/detail/removemember/${userId}`,groupId,{headers:{'Authentication':token}});
+                console.log(res);
+                document.getElementById('users').removeChild(e.target.parentElement);
+               
+                }catch(err){console.log(err)}
+              
+
+            }
+           async function makeAdmin(e)
+            {
+                let userId;
+                e.preventDefault();
+                document.querySelectorAll('.admin-button').forEach((admin)=>{
+                    if(e.target==admin){
+                        console.log(admin.parentElement.querySelector('#userId').value);
+                    userId=admin.parentElement.querySelector('#userId').value;
+                    } 
+                })
+                const groupId={
+                    groupId:localStorage.getItem('groupdetail')
+                }
+                const res=await axios.post(`http://localhost:3000/detail/makeadmin/${userId}`,groupId,{headers:{'Authentication':token}});
+            }
+     
+
+async function addToGroup(e)
+{
+    let userId;
+                e.preventDefault();
+                document.querySelectorAll('.add').forEach((adduser)=>{
+                    if(e.target==adduser){
+                    userId=adduser.parentElement.querySelector('#userId').value;
+                    } 
+                })
+                const groupId={
+                    groupId:localStorage.getItem('groupdetail')
+                }
+                const res=await axios.post(`http://localhost:3000/detail/adduser/${userId}`,groupId,{headers:{'Authentication':token}});
+                document.getElementById('group-member').removeChild(e.target.parentElement);
+
+}
+
+
+
+
+    </script>
+</body>
+</html>

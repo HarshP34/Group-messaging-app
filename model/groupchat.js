@@ -8,7 +8,8 @@ const GroupChat=sequelize.define('groupchat',{
         autoIncrement:true,
         allowNull:false,
         primaryKey:true
-    }
+    },
+    isAdmin:Sequelize.BOOLEAN
 })
 
 module.exports=GroupChat;
